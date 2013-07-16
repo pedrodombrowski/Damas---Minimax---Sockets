@@ -16,7 +16,6 @@ import javax.swing.JTextField;
  * Janela principal da aplicação
  */
 public class Damas extends JFrame implements ActionListener {
-//teste de git
 	/**
 	 * ID Serial da classe
 	 */
