@@ -8,7 +8,7 @@ import java.net.*;
  * 
  */
 public class Cliente {
-
+//teste do git
 	static int BUFF = 128000; // tamanho do buffer
 
 	byte data[];
