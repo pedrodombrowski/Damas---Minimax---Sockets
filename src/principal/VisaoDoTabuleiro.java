@@ -105,7 +105,6 @@ public class VisaoDoTabuleiro extends JPanel {
 	/**
 	 * Começa um novo jogo como as vermelhas
 	 */
-	@SuppressWarnings("deprecation")
 	public void novoJogo() {
 		try {
 			System.out.println("Novo Jogo!");
@@ -119,7 +118,6 @@ public class VisaoDoTabuleiro extends JPanel {
 		tabuleiro.limpaTabuleiro();
 		selecionada.limpar();
 		repaint();
-		// MudaTitulo();
 	}
 
 	/**
@@ -262,22 +260,21 @@ public class VisaoDoTabuleiro extends JPanel {
 				System.exit(1);
 			}
 	}
-
+ /**
+  * Inicia a thread principal do jogo
+  * @param visao
+  * 		instância do tabuleiro
+  */
 	public void iniciaThreadPrincipal(VisaoDoTabuleiro visao) {
 		this.serv = new Serv(visao);
 		this.tServ = new Thread(this.serv);
 		this.tServ.start();
 	}
 
-	public boolean isIniciado() {
-		return iniciado;
-	}
-
-	public void setIniciado(boolean iniciado) {
-		this.iniciado = iniciado;
-		notify();
-	}
-
+	/**
+	 * Boolean sincronizada que faz a organização entre as duas threads informando se o servidor está conectado ou não
+	 * @return retorna estado do servidor
+	 */
 	public synchronized boolean isServidorConectado() {
 		try {
 			if (this.iniciado) {
@@ -289,20 +286,14 @@ public class VisaoDoTabuleiro extends JPanel {
 		return servidorConectado;
 	}
 
+	/**
+	 * Método responsável pela atribuição da boolean que informa se o servidor está conectado e liberação das threads em estado de espera
+	 * @param servidorConectado estado do servidor
+	 */
 	public synchronized void setServidorConectado(boolean servidorConectado) {
 		this.servidorConectado = servidorConectado;
 		notifyAll();
 	}
-
-	public boolean isClienteConectado() {
-		return clienteConectado;
-	}
-
-	public void setClienteConectado(boolean clienteConectado) {
-		this.clienteConectado = clienteConectado;
-		notify();
-	}
-
 }
 
 /**
@@ -314,7 +305,7 @@ class ServStart implements Runnable {
 	VisaoDoTabuleiro tabuleiro;
 
 	/**
-	 * Construtor do início do jogo
+	 * Construtor do início do servidor
 	 * 
 	 * @param tabuleiro
 	 *            Recebe uma instancia do jogo
@@ -324,7 +315,7 @@ class ServStart implements Runnable {
 	}
 
 	/**
-	 * Loop principal do jogo
+	 * Loop principal do servidor
 	 */
 	@Override
 	public void run() {
@@ -336,7 +327,6 @@ class ServStart implements Runnable {
 					tabuleiro.servidorConectado = true;
 					if (!tabuleiro.iniciado) {
 						tabuleiro.iniciado = false;
-						// tabuleiro.novoJogo();
 						tabuleiro.iniciaThreadPrincipal(tabuleiro);
 					}
 				}
@@ -774,6 +764,12 @@ class Serv implements Runnable {
 		int posicao;
 		byte x, y;
 
+		/**
+		 * Construtor
+		 * @param posicao posição no meu protocolo
+		 * @param x posição de linha do protocolo da turma
+		 * @param y posição de coluna do protocolo da turma 
+		 */
 		public Conversor(int posicao, byte x, byte y) {
 			this.posicao = posicao;
 			this.x = x;
