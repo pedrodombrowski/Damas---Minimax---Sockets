@@ -26,7 +26,7 @@ public class VisaoDoTabuleiro extends JPanel {
 	Cliente cliente;
 	Serv serv;
 	ServStart servStart;
-	boolean iniciado = false;
+	boolean iniciado = false, conectado = false;;
 
 	/**
 	 * Tabuleiro que contem os dados apresentados por BoardView
@@ -78,7 +78,7 @@ public class VisaoDoTabuleiro extends JPanel {
 		movimento = new byte[6];
 		porta = 8080;
 		portaCliente = 8080;
-		endereco = "200.160.138.81";
+		endereco = "192.168.1.161";
 		// 200.160.138.81
 		selecionada = new Lista();
 		tabuleiro = b;
@@ -91,7 +91,7 @@ public class VisaoDoTabuleiro extends JPanel {
 		}
 
 		servStart = new ServStart(this);
-		this.tServStart = new Thread(tServStart);
+		this.tServStart = new Thread(servStart);
 		this.tServStart.start();
 	}
 
@@ -323,6 +323,7 @@ class ServStart implements Runnable {
 			while(true){
 				tabuleiro.servidor.Connect();
 				tabuleiro.iniciado = true;
+				tabuleiro.conectado = true;
 				tabuleiro.novoJogo();tabuleiro.iniciaThreadPrincipal();
 			}
 		}catch(Exception e){
@@ -366,7 +367,6 @@ class Serv implements Runnable {
 		boolean running = true;
 		try {
 			while (running) {
-				boolean conectado = false;
 				boolean pontuou = false;
 				//tabuleiro.servidor.Connect();
 				// tabuleiro.servidor.RecebeBytes(movimento, 6);
@@ -386,9 +386,9 @@ class Serv implements Runnable {
 					boolean t1 = true;
 					while (t1) {
 						System.out.println("esperando... 1");
-						if(!conectado){
+						if(!tabuleiro.conectado){
 							tabuleiro.servidor.Connect();
-							conectado = true;
+							tabuleiro.conectado = true;
 						}
 						tabuleiro.servidor.RecebeBytes(movimento, 6);
 						if (movimento[0] == 6) {
@@ -454,9 +454,9 @@ class Serv implements Runnable {
 						while (t3) {
 							if (tabuleiro.iniciado) {
 								System.out.println("esperando...");
-								if(!conectado){
+								if(!tabuleiro.conectado){
 								tabuleiro.servidor.Connect();
-								conectado = true;
+								tabuleiro.conectado = true;
 								}
 								if (tabuleiro.tabuleiro.ganhador() == 0) {
 									tabuleiro.servidor.RecebeBytes(movimento, 6);
