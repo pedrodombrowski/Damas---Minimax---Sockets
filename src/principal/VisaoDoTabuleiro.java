@@ -19,14 +19,14 @@ public class VisaoDoTabuleiro extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	int porta, portaCliente, eu , oponente;
+	int porta, portaCliente, eu, oponente;
 	byte movimento[];
 	String endereco;
 	Servidor servidor;
 	Cliente cliente;
 	Serv serv;
 	ServStart servStart;
-	boolean iniciado = false, conectado = false;;
+	boolean iniciado = false, servidorConectado = false, clienteConectado = false;
 
 	/**
 	 * Tabuleiro que contem os dados apresentados por BoardView
@@ -105,22 +105,21 @@ public class VisaoDoTabuleiro extends JPanel {
 	/**
 	 * Começa um novo jogo como as vermelhas
 	 */
+	@SuppressWarnings("deprecation")
 	public void novoJogo() {
 		try {
-			if(!this.iniciado){
-				this.iniciado = true;
-				cliente = new Cliente(portaCliente, endereco);
-				iniciaThreadPrincipal();
-			}else{
-				cliente = new Cliente(portaCliente, endereco);
-			}
+			System.out.println("Novo Jogo!");
+			this.iniciado = true;
+			cliente = new Cliente(portaCliente, endereco);
+			this.clienteConectado = true;
+			iniciaThreadPrincipal(this);
 		} catch (Exception e) {
 
 		}
 		tabuleiro.limpaTabuleiro();
 		selecionada.limpar();
 		repaint();
-		MudaTitulo();
+		// MudaTitulo();
 	}
 
 	/**
@@ -264,46 +263,56 @@ public class VisaoDoTabuleiro extends JPanel {
 			}
 	}
 
-	public void iniciaThreadPrincipal(){
-		this.serv = new Serv(this);
+	public void iniciaThreadPrincipal(VisaoDoTabuleiro visao) {
+		this.serv = new Serv(visao);
 		this.tServ = new Thread(this.serv);
 		this.tServ.start();
 	}
-	
-}
 
-
-
-/*class ServStart implements Runnable {
-
-	VisaoDoTabuleiro tabuleiro;
-
-	public ServStart(VisaoDoTabuleiro tabuleiro) {
-		this.tabuleiro = tabuleiro;
+	public boolean isIniciado() {
+		return iniciado;
 	}
 
-	@Override
-	public void run() {
+	public void setIniciado(boolean iniciado) {
+		this.iniciado = iniciado;
+		notify();
+	}
+
+	public synchronized boolean isServidorConectado() {
 		try {
-			tabuleiro.servidor.Connect();
-			if(!tabuleiro.iniciado){
-				tabuleiro.iniciaThreadPrincipal();
+			if (this.iniciado) {
+				wait();
 			}
 		} catch (Exception e) {
 
 		}
+		return servidorConectado;
 	}
-}*/
 
+	public synchronized void setServidorConectado(boolean servidorConectado) {
+		this.servidorConectado = servidorConectado;
+		notifyAll();
+	}
+
+	public boolean isClienteConectado() {
+		return clienteConectado;
+	}
+
+	public void setClienteConectado(boolean clienteConectado) {
+		this.clienteConectado = clienteConectado;
+		notify();
+	}
+
+}
 
 /**
- * Classe do loop do jogo
+ * Classe do loop do servidor
  * 
  */
 class ServStart implements Runnable {
-	
+
 	VisaoDoTabuleiro tabuleiro;
-	
+
 	/**
 	 * Construtor do início do jogo
 	 * 
@@ -313,25 +322,30 @@ class ServStart implements Runnable {
 	public ServStart(VisaoDoTabuleiro tabuleiro) {
 		this.tabuleiro = tabuleiro;
 	}
-	
+
 	/**
 	 * Loop principal do jogo
 	 */
 	@Override
 	public void run() {
-		try{
-			while(true){
-				tabuleiro.servidor.Connect();
-				tabuleiro.iniciado = true;
-				tabuleiro.conectado = true;
-				tabuleiro.novoJogo();tabuleiro.iniciaThreadPrincipal();
+		try {
+			while (true) {
+				if (!tabuleiro.isServidorConectado()) {
+					tabuleiro.servidor.Connect();
+					System.out.println("Conectou no servStart!");
+					tabuleiro.servidorConectado = true;
+					if (!tabuleiro.iniciado) {
+						tabuleiro.iniciado = false;
+						// tabuleiro.novoJogo();
+						tabuleiro.iniciaThreadPrincipal(tabuleiro);
+					}
+				}
 			}
-		}catch(Exception e){
-			
+		} catch (Exception e) {
+
 		}
 	}
 }
-
 
 /**
  * Classe do loop do jogo
@@ -343,9 +357,8 @@ class Serv implements Runnable {
 	VisaoDoTabuleiro tabuleiro;
 	Lista lista;
 	List<Conversor> traducao;
-	int de = 0, para = 0;//, eu = 0, oponente = 0;
+	int de = 0, para = 0;
 	byte deIni, paraIni, deFin, paraFin;
-	
 
 	/**
 	 * Construtor do início do jogo
@@ -364,21 +377,17 @@ class Serv implements Runnable {
 	public void run() {
 		int cor = 0;
 		adicionaItems();
-		boolean running = true;
+		boolean running = true, iniciando = false;
 		try {
 			while (running) {
 				boolean pontuou = false;
-				//tabuleiro.servidor.Connect();
-				// tabuleiro.servidor.RecebeBytes(movimento, 6);
-				// if (movimento != null) {
-				// if (movimento[0] == 1) {
 				if (!tabuleiro.iniciado) {
 					tabuleiro.ai.setCor(Tabuleiro.VERMELHA);
-					tabuleiro.novoJogo();
 					tabuleiro.iniciado = true;
 				} else {
 					tabuleiro.ai.setCor(Tabuleiro.BRANCA);
 				}
+				System.out.println("cor do meu jogador: " + tabuleiro.ai.getCor());
 				tabuleiro.tabuleiro.setJogadorAtual(Tabuleiro.BRANCA);
 				tabuleiro.ai.getTabuleiroAtual().setJogadorAtual(Tabuleiro.BRANCA);
 				cor = tabuleiro.ai.getCor();
@@ -386,9 +395,9 @@ class Serv implements Runnable {
 					boolean t1 = true;
 					while (t1) {
 						System.out.println("esperando... 1");
-						if(!tabuleiro.conectado){
+						if (!tabuleiro.servidorConectado) {
 							tabuleiro.servidor.Connect();
-							tabuleiro.conectado = true;
+							tabuleiro.servidorConectado = true;
 						}
 						tabuleiro.servidor.RecebeBytes(movimento, 6);
 						if (movimento[0] == 6) {
@@ -399,7 +408,7 @@ class Serv implements Runnable {
 									tabuleiro.tabuleiro.move(de, para);
 									tabuleiro.repaint();
 									tabuleiro.ai.mudaTabuleiro(tabuleiro.tabuleiro);
-									Thread.sleep(300);
+									Thread.sleep(100);
 									respondeServidor(true);
 									t1 = false;
 								} else {
@@ -431,8 +440,13 @@ class Serv implements Runnable {
 						movimento[0] = 6;
 						movimento[1] = tipo;
 						setMovimentacao(de, para);
+						if (!tabuleiro.clienteConectado) {
+							Thread.sleep(300);
+							tabuleiro.cliente = new Cliente(tabuleiro.portaCliente, tabuleiro.endereco);
+							tabuleiro.clienteConectado = true;
+						}
 						tabuleiro.cliente.EnviaBytes(movimento, 6);
-						Thread.sleep(300);
+						Thread.sleep(100);
 						tabuleiro.cliente.RecebeBytes(movimento, 6);
 						if (movimento != null) {
 							if (movimento[0] == 4) {
@@ -454,57 +468,61 @@ class Serv implements Runnable {
 						while (t3) {
 							if (tabuleiro.iniciado) {
 								System.out.println("esperando...");
-								if(!tabuleiro.conectado){
-								tabuleiro.servidor.Connect();
-								tabuleiro.conectado = true;
+								if(!iniciando){
+									Thread.sleep(500);
+									iniciando = true;
 								}
-								if (tabuleiro.tabuleiro.ganhador() == 0) {
-									tabuleiro.servidor.RecebeBytes(movimento, 6);
-									if (movimento[0] == 6) {
-										byte validador = movimento[1];
-										de = getPosicaoPorCoor(movimento[2], movimento[3]);
-										para = getPosicaoPorCoor(movimento[4], movimento[5]);
-										if (de > -1 && para > -1) {
-											if (tabuleiro.tabuleiro.movimentoValido(de, para)) {
-												tabuleiro.tabuleiro.move(de, para);
-												tabuleiro.repaint();
-												// tabuleiro.ai.mudaTabuleiro(tabuleiro.tabuleiro);
-												Thread.sleep(300);
-												respondeServidor(true);
-												if (validador == 1 || validador == 0) {
-													t3 = false;
+								if (tabuleiro.servidorConectado == true) {
+									if (tabuleiro.tabuleiro.ganhador() == 0) {
+										tabuleiro.servidor.RecebeBytes(movimento, 6);
+										if (movimento[0] == 6) {
+											byte validador = movimento[1];
+											de = getPosicaoPorCoor(movimento[2], movimento[3]);
+											para = getPosicaoPorCoor(movimento[4], movimento[5]);
+											if (de > -1 && para > -1) {
+												if (tabuleiro.tabuleiro.movimentoValido(de, para)) {
+													tabuleiro.tabuleiro.move(de, para);
+													tabuleiro.repaint();
+													Thread.sleep(300);
+													respondeServidor(true);
+													if (validador == 1 || validador == 0) {
+														t3 = false;
+													}
+												} else {
+													respondeServidor(false);
 												}
-											} else {
-												respondeServidor(false);
 											}
 										}
-									}
-								} else {
-									String w = "";
-									if (tabuleiro.tabuleiro.ganhador() == Tabuleiro.VERMELHA) {
-										w = "Vermelhas";
 									} else {
-										w = "Brancas";
-									}
-									if (!pontuou) {
-										if (cor == tabuleiro.tabuleiro.ganhador()) {
-											tabuleiro.eu++;
+										String w = "";
+										if (tabuleiro.tabuleiro.ganhador() == Tabuleiro.VERMELHA) {
+											w = "Vermelhas";
 										} else {
-											tabuleiro.oponente++;
+											w = "Brancas";
 										}
-										pontuou = true;
-										System.out.println("Ganhador: " + w);
-										System.out.println("Pontuação: eu: " + tabuleiro.eu + ", oponente: " + tabuleiro.oponente);
-										tabuleiro.pai.getEulbl().setText("   Eu: " + tabuleiro.eu + "   ");
-										tabuleiro.pai.getOponentelbl().setText("   Oponente: " + tabuleiro.oponente + "   ");
-										tabuleiro.pai.setTitle("Damas - As " + w + " ganharam!");
-										tabuleiro.repaint();
-										running = false;
+										if (!pontuou) {
+											if (cor == tabuleiro.tabuleiro.ganhador()) {
+												tabuleiro.eu++;
+											} else {
+												tabuleiro.oponente++;
+											}
+											pontuou = true;
+											System.out.println("Ganhador: " + w);
+											System.out.println("Pontuação: eu: " + tabuleiro.eu + ", oponente: " + tabuleiro.oponente);
+											tabuleiro.pai.getEulbl().setText("   Eu: " + tabuleiro.eu + "   ");
+											tabuleiro.pai.getOponentelbl().setText("   Oponente: " + tabuleiro.oponente + "   ");
+											tabuleiro.pai.setTitle("Damas - As " + w + " ganharam!");
+											tabuleiro.tabuleiro.limpaTabuleiro();
+											tabuleiro.selecionada.limpar();
+											tabuleiro.repaint();
+											running = false;
+											tabuleiro.setServidorConectado(false);
+										}
+										t3 = false;
+										tabuleiro.iniciado = false;
 									}
-									t3 = false;
-									tabuleiro.iniciado = false;
+									tabuleiro.repaint();
 								}
-								tabuleiro.repaint();
 							} else {
 								t3 = false;
 							}
@@ -543,6 +561,10 @@ class Serv implements Runnable {
 											tipo = 2;
 										}
 										movimento[1] = tipo;
+										if (!tabuleiro.clienteConectado) {
+											tabuleiro.cliente = new Cliente(tabuleiro.portaCliente, tabuleiro.endereco);
+											tabuleiro.clienteConectado = true;
+										}
 										tabuleiro.cliente.EnviaBytes(movimento, 6);
 										Thread.sleep(300);
 										tabuleiro.cliente.RecebeBytes(movimento, 6);
@@ -576,6 +598,10 @@ class Serv implements Runnable {
 										tabuleiro.pai.getEulbl().setText("   Eu: " + tabuleiro.eu + "   ");
 										tabuleiro.pai.getOponentelbl().setText("   Oponente: " + tabuleiro.oponente + "   ");
 										tabuleiro.pai.setTitle("Damas - As " + w + " ganharam!");
+										tabuleiro.servidorConectado = false;
+										tabuleiro.tabuleiro.limpaTabuleiro();
+										tabuleiro.selecionada.limpar();
+										tabuleiro.setServidorConectado(false);
 										tabuleiro.repaint();
 										running = false;
 									}
@@ -587,25 +613,11 @@ class Serv implements Runnable {
 								t4 = false;
 							}
 						}
-						// tabuleiro.MudaTitulo();
 						tabuleiro.repaint();
 					} catch (Exception e) {
 
 					}
 				}
-
-				/*
-				 * if(!tabuleiro.iniciado){ if (cor ==
-				 * tabuleiro.tabuleiro.ganhador()) { movimento[0] = 9;
-				 * movimento[1] = 0; movimento[2] = 0; movimento[3] = 0;
-				 * movimento[4] = 0; movimento[5] = 0;
-				 * tabuleiro.cliente.EnviaBytes(movimento, 6); }else{
-				 * tabuleiro.servidor.RecebeBytes(movimento, 6); if(movimento !=
-				 * null){ if(movimento[0] == 9){ responde(true); } } } }
-				 */
-
-				// }
-				// }
 			}
 		} catch (Exception e) {
 
