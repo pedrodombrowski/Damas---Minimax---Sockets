@@ -17,7 +17,7 @@ public class Ai {
 	/**
 	 * Profundidade máxima para o minimax
 	 */
-	private static final int profundidadeMaxima = 6;
+	private static final int profundidadeMaxima = 3;
 
 	/**
 	 * Peso das casas do tabuleiro

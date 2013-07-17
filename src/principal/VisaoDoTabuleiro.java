@@ -19,12 +19,13 @@ public class VisaoDoTabuleiro extends JPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	int porta, portaCliente;
+	int porta, portaCliente, eu , oponente;
 	byte movimento[];
 	String endereco;
 	Servidor servidor;
 	Cliente cliente;
-	Serv tServ;
+	Serv serv;
+	ServStart servStart;
 	boolean iniciado = false;
 
 	/**
@@ -63,7 +64,7 @@ public class VisaoDoTabuleiro extends JPanel {
 	 */
 	Damas pai;
 
-	Thread tServidor;
+	Thread tServStart, tServ;
 
 	/**
 	 * Construtor
@@ -77,7 +78,7 @@ public class VisaoDoTabuleiro extends JPanel {
 		movimento = new byte[6];
 		porta = 8080;
 		portaCliente = 8080;
-		endereco = "192.168.1.20";
+		endereco = "200.160.138.81";
 		// 200.160.138.81
 		selecionada = new Lista();
 		tabuleiro = b;
@@ -89,9 +90,9 @@ public class VisaoDoTabuleiro extends JPanel {
 
 		}
 
-		tServ = new Serv(this);
-		this.tServidor = new Thread(tServ);
-		this.tServidor.start();
+		servStart = new ServStart(this);
+		this.tServStart = new Thread(tServStart);
+		this.tServStart.start();
 	}
 
 	/**
@@ -106,15 +107,13 @@ public class VisaoDoTabuleiro extends JPanel {
 	 */
 	public void novoJogo() {
 		try {
-			this.iniciado = true;
-			cliente = new Cliente(portaCliente, endereco);
-			// movimento[0] = 1;
-			// movimento[1] = 0;
-			// movimento[2] = 0;
-			// movimento[3] = 0;
-			// movimento[4] = 0;
-			// movimento[5] = 0;
-			// cliente.EnviaBytes(movimento, 6);
+			if(!this.iniciado){
+				this.iniciado = true;
+				cliente = new Cliente(portaCliente, endereco);
+				iniciaThreadPrincipal();
+			}else{
+				cliente = new Cliente(portaCliente, endereco);
+			}
 		} catch (Exception e) {
 
 		}
@@ -265,7 +264,73 @@ public class VisaoDoTabuleiro extends JPanel {
 			}
 	}
 
+	public void iniciaThreadPrincipal(){
+		this.serv = new Serv(this);
+		this.tServ = new Thread(this.serv);
+		this.tServ.start();
+	}
+	
 }
+
+
+
+/*class ServStart implements Runnable {
+
+	VisaoDoTabuleiro tabuleiro;
+
+	public ServStart(VisaoDoTabuleiro tabuleiro) {
+		this.tabuleiro = tabuleiro;
+	}
+
+	@Override
+	public void run() {
+		try {
+			tabuleiro.servidor.Connect();
+			if(!tabuleiro.iniciado){
+				tabuleiro.iniciaThreadPrincipal();
+			}
+		} catch (Exception e) {
+
+		}
+	}
+}*/
+
+
+/**
+ * Classe do loop do jogo
+ * 
+ */
+class ServStart implements Runnable {
+	
+	VisaoDoTabuleiro tabuleiro;
+	
+	/**
+	 * Construtor do início do jogo
+	 * 
+	 * @param tabuleiro
+	 *            Recebe uma instancia do jogo
+	 */
+	public ServStart(VisaoDoTabuleiro tabuleiro) {
+		this.tabuleiro = tabuleiro;
+	}
+	
+	/**
+	 * Loop principal do jogo
+	 */
+	@Override
+	public void run() {
+		try{
+			while(true){
+				tabuleiro.servidor.Connect();
+				tabuleiro.iniciado = true;
+				tabuleiro.novoJogo();tabuleiro.iniciaThreadPrincipal();
+			}
+		}catch(Exception e){
+			
+		}
+	}
+}
+
 
 /**
  * Classe do loop do jogo
@@ -277,8 +342,9 @@ class Serv implements Runnable {
 	VisaoDoTabuleiro tabuleiro;
 	Lista lista;
 	List<Conversor> traducao;
-	int de = 0, para = 0, eu = 0, oponente = 0;
+	int de = 0, para = 0;//, eu = 0, oponente = 0;
 	byte deIni, paraIni, deFin, paraFin;
+	
 
 	/**
 	 * Construtor do início do jogo
@@ -297,10 +363,12 @@ class Serv implements Runnable {
 	public void run() {
 		int cor = 0;
 		adicionaItems();
+		boolean running = true;
 		try {
-			while (true) {
+			while (running) {
+				boolean conectado = false;
 				boolean pontuou = false;
-				tabuleiro.servidor.Connect();
+				//tabuleiro.servidor.Connect();
 				// tabuleiro.servidor.RecebeBytes(movimento, 6);
 				// if (movimento != null) {
 				// if (movimento[0] == 1) {
@@ -318,6 +386,10 @@ class Serv implements Runnable {
 					boolean t1 = true;
 					while (t1) {
 						System.out.println("esperando... 1");
+						if(!conectado){
+							tabuleiro.servidor.Connect();
+							conectado = true;
+						}
 						tabuleiro.servidor.RecebeBytes(movimento, 6);
 						if (movimento[0] == 6) {
 							de = getPosicaoPorCoor(movimento[2], movimento[3]);
@@ -327,7 +399,7 @@ class Serv implements Runnable {
 									tabuleiro.tabuleiro.move(de, para);
 									tabuleiro.repaint();
 									tabuleiro.ai.mudaTabuleiro(tabuleiro.tabuleiro);
-									Thread.sleep(100);
+									Thread.sleep(300);
 									respondeServidor(true);
 									t1 = false;
 								} else {
@@ -360,7 +432,7 @@ class Serv implements Runnable {
 						movimento[1] = tipo;
 						setMovimentacao(de, para);
 						tabuleiro.cliente.EnviaBytes(movimento, 6);
-						Thread.sleep(100);
+						Thread.sleep(300);
 						tabuleiro.cliente.RecebeBytes(movimento, 6);
 						if (movimento != null) {
 							if (movimento[0] == 4) {
@@ -382,6 +454,10 @@ class Serv implements Runnable {
 						while (t3) {
 							if (tabuleiro.iniciado) {
 								System.out.println("esperando...");
+								if(!conectado){
+								tabuleiro.servidor.Connect();
+								conectado = true;
+								}
 								if (tabuleiro.tabuleiro.ganhador() == 0) {
 									tabuleiro.servidor.RecebeBytes(movimento, 6);
 									if (movimento[0] == 6) {
@@ -393,7 +469,7 @@ class Serv implements Runnable {
 												tabuleiro.tabuleiro.move(de, para);
 												tabuleiro.repaint();
 												// tabuleiro.ai.mudaTabuleiro(tabuleiro.tabuleiro);
-												Thread.sleep(100);
+												Thread.sleep(300);
 												respondeServidor(true);
 												if (validador == 1 || validador == 0) {
 													t3 = false;
@@ -412,17 +488,18 @@ class Serv implements Runnable {
 									}
 									if (!pontuou) {
 										if (cor == tabuleiro.tabuleiro.ganhador()) {
-											eu++;
+											tabuleiro.eu++;
 										} else {
-											oponente++;
+											tabuleiro.oponente++;
 										}
 										pontuou = true;
 										System.out.println("Ganhador: " + w);
-										System.out.println("Pontuação: eu: " + eu + ", oponente: " + oponente);
-										tabuleiro.pai.getEulbl().setText("   Eu: " + eu + "   ");
-										tabuleiro.pai.getOponentelbl().setText("   Oponente: " + oponente + "   ");
+										System.out.println("Pontuação: eu: " + tabuleiro.eu + ", oponente: " + tabuleiro.oponente);
+										tabuleiro.pai.getEulbl().setText("   Eu: " + tabuleiro.eu + "   ");
+										tabuleiro.pai.getOponentelbl().setText("   Oponente: " + tabuleiro.oponente + "   ");
 										tabuleiro.pai.setTitle("Damas - As " + w + " ganharam!");
 										tabuleiro.repaint();
+										running = false;
 									}
 									t3 = false;
 									tabuleiro.iniciado = false;
@@ -452,11 +529,11 @@ class Serv implements Runnable {
 										movimento[0] = 6;
 										setMovimentacao(de, para);
 										byte tipo = 0;
-										int teste = movimento[4]-movimento[2];
-										if(teste<0){
-											teste = teste*-1;
+										int teste = movimento[4] - movimento[2];
+										if (teste < 0) {
+											teste = teste * -1;
 										}
-										if (teste>1) {
+										if (teste > 1) {
 											if (e.hasMoreElements()) {
 												tipo = 2;
 											} else {
@@ -467,7 +544,7 @@ class Serv implements Runnable {
 										}
 										movimento[1] = tipo;
 										tabuleiro.cliente.EnviaBytes(movimento, 6);
-										Thread.sleep(100);
+										Thread.sleep(300);
 										tabuleiro.cliente.RecebeBytes(movimento, 6);
 										if (movimento != null) {
 											if (movimento[0] == 4) {
@@ -489,17 +566,18 @@ class Serv implements Runnable {
 									}
 									if (!pontuou) {
 										if (cor == tabuleiro.tabuleiro.ganhador()) {
-											eu++;
+											tabuleiro.eu++;
 										} else {
-											oponente++;
+											tabuleiro.oponente++;
 										}
 										pontuou = true;
 										System.out.println("Ganhador: " + w);
-										System.out.println("Pontuação: eu: " + eu + ", oponente: " + oponente);
-										tabuleiro.pai.getEulbl().setText("   Eu: " + eu + "   ");
-										tabuleiro.pai.getOponentelbl().setText("   Oponente: " + oponente + "   ");
+										System.out.println("Pontuação: eu: " + tabuleiro.eu + ", oponente: " + tabuleiro.oponente);
+										tabuleiro.pai.getEulbl().setText("   Eu: " + tabuleiro.eu + "   ");
+										tabuleiro.pai.getOponentelbl().setText("   Oponente: " + tabuleiro.oponente + "   ");
 										tabuleiro.pai.setTitle("Damas - As " + w + " ganharam!");
 										tabuleiro.repaint();
+										running = false;
 									}
 									t4 = false;
 									tabuleiro.iniciado = false;
@@ -640,7 +718,7 @@ class Serv implements Runnable {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Gera e envia uma resposta via socket Servidor
 	 * 
