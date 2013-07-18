@@ -62,7 +62,7 @@ public class Cliente {
 	 *            tamanho do array
 	 * @throws IOException
 	 */
-	public void EnviaBytes(byte vals[], int len) throws IOException {		
+	public void EnviaBytes(byte vals[], int len) throws IOException {
 		System.out.print("Cliente: enviando " + len + " bytes: ");
 		for (int i = 0; i < len; i++)
 			System.out.print(vals[i] + " ");
@@ -71,14 +71,14 @@ public class Cliente {
 		saida.write(vals, 0, len);
 		saida.flush();
 	}
-	
+
 	/**
 	 * Recebe um array de bytes via socket
 	 * 
 	 * @param val
 	 *            array de bytes a ser usado para armazenar os bytes recebidos
-	 * @param maxlen retorno 
-	 *            número de elementos do array
+	 * @param maxlen
+	 *            retorno número de elementos do array
 	 * @return retorno
 	 * @throws IOException
 	 */
@@ -110,6 +110,7 @@ public class Cliente {
 
 	/**
 	 * Fecha o socket
+	 * 
 	 * @throws IOException
 	 */
 	public void Fecha() throws IOException {

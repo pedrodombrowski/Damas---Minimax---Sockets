@@ -77,8 +77,8 @@ public class VisaoDoTabuleiro extends JPanel {
 	public VisaoDoTabuleiro(Damas pai, Tabuleiro b) {
 		movimento = new byte[6];
 		porta = 8080;
-		portaCliente = 8080;
-		endereco = "192.168.1.161";
+		portaCliente = 7070;
+		endereco = "localhost";
 		// 200.160.138.81
 		selecionada = new Lista();
 		tabuleiro = b;
@@ -260,11 +260,13 @@ public class VisaoDoTabuleiro extends JPanel {
 				System.exit(1);
 			}
 	}
- /**
-  * Inicia a thread principal do jogo
-  * @param visao
-  * 		instância do tabuleiro
-  */
+
+	/**
+	 * Inicia a thread principal do jogo
+	 * 
+	 * @param visao
+	 *            instância do tabuleiro
+	 */
 	public void iniciaThreadPrincipal(VisaoDoTabuleiro visao) {
 		this.serv = new Serv(visao);
 		this.tServ = new Thread(this.serv);
@@ -272,7 +274,9 @@ public class VisaoDoTabuleiro extends JPanel {
 	}
 
 	/**
-	 * Boolean sincronizada que faz a organização entre as duas threads informando se o servidor está conectado ou não
+	 * Boolean sincronizada que faz a organização entre as duas threads
+	 * informando se o servidor está conectado ou não
+	 * 
 	 * @return retorna estado do servidor
 	 */
 	public synchronized boolean isServidorConectado() {
@@ -287,8 +291,11 @@ public class VisaoDoTabuleiro extends JPanel {
 	}
 
 	/**
-	 * Método responsável pela atribuição da boolean que informa se o servidor está conectado e liberação das threads em estado de espera
-	 * @param servidorConectado estado do servidor
+	 * Método responsável pela atribuição da boolean que informa se o servidor
+	 * está conectado e liberação das threads em estado de espera
+	 * 
+	 * @param servidorConectado
+	 *            estado do servidor
 	 */
 	public synchronized void setServidorConectado(boolean servidorConectado) {
 		this.servidorConectado = servidorConectado;
@@ -302,7 +309,7 @@ public class VisaoDoTabuleiro extends JPanel {
  */
 class ServStart implements Runnable {
 
-	VisaoDoTabuleiro tabuleiro;
+	VisaoDoTabuleiro visao;
 
 	/**
 	 * Construtor do início do servidor
@@ -311,7 +318,7 @@ class ServStart implements Runnable {
 	 *            Recebe uma instancia do jogo
 	 */
 	public ServStart(VisaoDoTabuleiro tabuleiro) {
-		this.tabuleiro = tabuleiro;
+		this.visao = tabuleiro;
 	}
 
 	/**
@@ -321,13 +328,13 @@ class ServStart implements Runnable {
 	public void run() {
 		try {
 			while (true) {
-				if (!tabuleiro.isServidorConectado()) {
-					tabuleiro.servidor.Connect();
+				if (!visao.isServidorConectado()) {
+					visao.servidor.Connect();
 					System.out.println("Conectou no servStart!");
-					tabuleiro.servidorConectado = true;
-					if (!tabuleiro.iniciado) {
-						tabuleiro.iniciado = false;
-						tabuleiro.iniciaThreadPrincipal(tabuleiro);
+					visao.servidorConectado = true;
+					if (!visao.iniciado) {
+						visao.iniciado = false;
+						visao.iniciaThreadPrincipal(visao);
 					}
 				}
 			}
@@ -344,9 +351,9 @@ class ServStart implements Runnable {
 class Serv implements Runnable {
 
 	byte movimento[] = new byte[6];
-	VisaoDoTabuleiro tabuleiro;
+	VisaoDoTabuleiro visao;
 	Lista lista;
-	List<Conversor> traducao;
+	List<Conversor> conversores;
 	int de = 0, para = 0;
 	byte deIni, paraIni, deFin, paraFin;
 
@@ -357,7 +364,7 @@ class Serv implements Runnable {
 	 *            Recebe uma instancia do jogo
 	 */
 	public Serv(VisaoDoTabuleiro tabuleiro) {
-		this.tabuleiro = tabuleiro;
+		this.visao = tabuleiro;
 	}
 
 	/**
@@ -371,33 +378,33 @@ class Serv implements Runnable {
 		try {
 			while (running) {
 				boolean pontuou = false;
-				if (!tabuleiro.iniciado) {
-					tabuleiro.ai.setCor(Tabuleiro.VERMELHA);
-					tabuleiro.iniciado = true;
+				if (!visao.iniciado) {
+					visao.ai.setCor(Tabuleiro.VERMELHA);
+					visao.iniciado = true;
 				} else {
-					tabuleiro.ai.setCor(Tabuleiro.BRANCA);
+					visao.ai.setCor(Tabuleiro.BRANCA);
 				}
-				System.out.println("cor do meu jogador: " + tabuleiro.ai.getCor());
-				tabuleiro.tabuleiro.setJogadorAtual(Tabuleiro.BRANCA);
-				tabuleiro.ai.getTabuleiroAtual().setJogadorAtual(Tabuleiro.BRANCA);
-				cor = tabuleiro.ai.getCor();
+				System.out.println("cor do meu jogador: " + visao.ai.getCor());
+				visao.tabuleiro.setJogadorAtual(Tabuleiro.BRANCA);
+				visao.ai.getTabuleiroAtual().setJogadorAtual(Tabuleiro.BRANCA);
+				cor = visao.ai.getCor();
 				if (cor == Tabuleiro.VERMELHA) {
 					boolean t1 = true;
 					while (t1) {
-						System.out.println("esperando... 1");
-						if (!tabuleiro.servidorConectado) {
-							tabuleiro.servidor.Connect();
-							tabuleiro.servidorConectado = true;
+						System.out.println("esperando...");
+						if (!visao.servidorConectado) {
+							visao.servidor.Connect();
+							visao.servidorConectado = true;
 						}
-						tabuleiro.servidor.RecebeBytes(movimento, 6);
+						visao.servidor.RecebeBytes(movimento, 6);
 						if (movimento[0] == 6) {
 							de = getPosicaoPorCoor(movimento[2], movimento[3]);
 							para = getPosicaoPorCoor(movimento[4], movimento[5]);
 							if (de > -1 && para > -1) {
-								if (tabuleiro.tabuleiro.movimentoValido(de, para)) {
-									tabuleiro.tabuleiro.move(de, para);
-									tabuleiro.repaint();
-									tabuleiro.ai.mudaTabuleiro(tabuleiro.tabuleiro);
+								if (visao.tabuleiro.movimentoValido(de, para)) {
+									visao.tabuleiro.move(de, para);
+									visao.repaint();
+									visao.ai.mudaTabuleiro(visao.tabuleiro);
 									Thread.sleep(100);
 									respondeServidor(true);
 									t1 = false;
@@ -410,9 +417,9 @@ class Serv implements Runnable {
 				}
 				boolean t2 = true;
 				while (t2) {
-					System.out.println("pensando... 2");
-					Tabuleiro temp = tabuleiro.ai.getTabuleiroAtual();
-					lista = tabuleiro.ai.joga();
+					System.out.println("pensando...");
+					Tabuleiro temp = visao.ai.getTabuleiroAtual();
+					lista = visao.ai.joga();
 					Movimentos mov;
 					@SuppressWarnings("rawtypes")
 					Enumeration e = lista.elementos();
@@ -420,7 +427,7 @@ class Serv implements Runnable {
 						mov = (Movimentos) e.nextElement();
 						int de = mov.getDe(), para = mov.getPara();
 						byte tipo = 0;
-						if (tabuleiro.ai.getTabuleiroAtual().temQueAtacar()) {
+						if (visao.ai.getTabuleiroAtual().temQueAtacar()) {
 							if (e.hasMoreElements()) {
 								tipo = 2;
 							} else {
@@ -430,49 +437,49 @@ class Serv implements Runnable {
 						movimento[0] = 6;
 						movimento[1] = tipo;
 						setMovimentacao(de, para);
-						if (!tabuleiro.clienteConectado) {
+						if (!visao.clienteConectado) {
 							Thread.sleep(300);
-							tabuleiro.cliente = new Cliente(tabuleiro.portaCliente, tabuleiro.endereco);
-							tabuleiro.clienteConectado = true;
+							visao.cliente = new Cliente(visao.portaCliente, visao.endereco);
+							visao.clienteConectado = true;
 						}
-						tabuleiro.cliente.EnviaBytes(movimento, 6);
+						visao.cliente.EnviaBytes(movimento, 6);
 						Thread.sleep(100);
-						tabuleiro.cliente.RecebeBytes(movimento, 6);
+						visao.cliente.RecebeBytes(movimento, 6);
 						if (movimento != null) {
 							if (movimento[0] == 4) {
-								tabuleiro.tabuleiro = tabuleiro.ai.getTabuleiroAtual();
+								visao.tabuleiro = visao.ai.getTabuleiroAtual();
 								t2 = false;
-								tabuleiro.repaint();
+								visao.repaint();
 							} else {
-								tabuleiro.tabuleiro = temp;
-								tabuleiro.ai.mudaTabuleiro(temp);
+								visao.tabuleiro = temp;
+								visao.ai.mudaTabuleiro(temp);
 							}
 						}
 					}
 				}
 				// loop principal do jogo
-				while (tabuleiro.iniciado) {
+				while (visao.iniciado) {
 					try {
 						// RECEBENDO UMA JOGADA
 						boolean t3 = true;
 						while (t3) {
-							if (tabuleiro.iniciado) {
+							if (visao.iniciado) {
 								System.out.println("esperando...");
-								if(!iniciando){
+								if (!iniciando) {
 									Thread.sleep(500);
 									iniciando = true;
 								}
-								if (tabuleiro.servidorConectado == true) {
-									if (tabuleiro.tabuleiro.ganhador() == 0) {
-										tabuleiro.servidor.RecebeBytes(movimento, 6);
+								if (visao.servidorConectado == true) {
+									if (visao.tabuleiro.ganhador() == 0) {
+										visao.servidor.RecebeBytes(movimento, 6);
 										if (movimento[0] == 6) {
 											byte validador = movimento[1];
 											de = getPosicaoPorCoor(movimento[2], movimento[3]);
 											para = getPosicaoPorCoor(movimento[4], movimento[5]);
 											if (de > -1 && para > -1) {
-												if (tabuleiro.tabuleiro.movimentoValido(de, para)) {
-													tabuleiro.tabuleiro.move(de, para);
-													tabuleiro.repaint();
+												if (visao.tabuleiro.movimentoValido(de, para)) {
+													visao.tabuleiro.move(de, para);
+													visao.repaint();
 													Thread.sleep(300);
 													respondeServidor(true);
 													if (validador == 1 || validador == 0) {
@@ -485,49 +492,50 @@ class Serv implements Runnable {
 										}
 									} else {
 										String w = "";
-										if (tabuleiro.tabuleiro.ganhador() == Tabuleiro.VERMELHA) {
+										if (visao.tabuleiro.ganhador() == Tabuleiro.VERMELHA) {
 											w = "Vermelhas";
 										} else {
 											w = "Brancas";
 										}
 										if (!pontuou) {
-											if (cor == tabuleiro.tabuleiro.ganhador()) {
-												tabuleiro.eu++;
+											if (cor == visao.tabuleiro.ganhador()) {
+												visao.eu++;
 											} else {
-												tabuleiro.oponente++;
+												visao.oponente++;
 											}
 											pontuou = true;
 											System.out.println("Ganhador: " + w);
-											System.out.println("Pontuação: eu: " + tabuleiro.eu + ", oponente: " + tabuleiro.oponente);
-											tabuleiro.pai.getEulbl().setText("   Eu: " + tabuleiro.eu + "   ");
-											tabuleiro.pai.getOponentelbl().setText("   Oponente: " + tabuleiro.oponente + "   ");
-											tabuleiro.pai.setTitle("Damas - As " + w + " ganharam!");
-											tabuleiro.tabuleiro.limpaTabuleiro();
-											tabuleiro.selecionada.limpar();
-											tabuleiro.repaint();
+											System.out.println("Pontuação: eu: " + visao.eu + ", oponente: " + visao.oponente);
+											visao.pai.getEulbl().setText("   Eu: " + visao.eu + "   ");
+											visao.pai.getOponentelbl().setText("   Oponente: " + visao.oponente + "   ");
+											visao.pai.setTitle("Damas - As " + w + " ganharam!");
+											visao.tabuleiro.limpaTabuleiro();
+											visao.selecionada.limpar();
+											visao.repaint();
 											running = false;
-											tabuleiro.setServidorConectado(false);
+											visao.setServidorConectado(false);
+											visao.clienteConectado = false;
 										}
 										t3 = false;
-										tabuleiro.iniciado = false;
+										visao.iniciado = false;
 									}
-									tabuleiro.repaint();
+									visao.repaint();
 								}
 							} else {
 								t3 = false;
 							}
 						}
-						if (tabuleiro.tabuleiro.getJogadorAtual() != cor) {
-							tabuleiro.tabuleiro.setJogadorAtual(cor);
+						if (visao.tabuleiro.getJogadorAtual() != cor) {
+							visao.tabuleiro.setJogadorAtual(cor);
 						}
 						// ENVIANDO UMA JOGADA
 						boolean t4 = true;
 						while (t4) {
-							if (tabuleiro.iniciado) {
+							if (visao.iniciado) {
 								System.out.println("pensando...");
-								if (tabuleiro.tabuleiro.ganhador() == 0) {
-									Tabuleiro temp = tabuleiro.ai.getTabuleiroAtual();
-									lista = tabuleiro.ai.joga();
+								if (visao.tabuleiro.ganhador() == 0) {
+									Tabuleiro temp = visao.ai.getTabuleiroAtual();
+									lista = visao.ai.joga();
 									Movimentos mov;
 									@SuppressWarnings("rawtypes")
 									Enumeration e = lista.elementos();
@@ -551,59 +559,60 @@ class Serv implements Runnable {
 											tipo = 2;
 										}
 										movimento[1] = tipo;
-										if (!tabuleiro.clienteConectado) {
-											tabuleiro.cliente = new Cliente(tabuleiro.portaCliente, tabuleiro.endereco);
-											tabuleiro.clienteConectado = true;
+										if (!visao.clienteConectado) {
+											visao.cliente = new Cliente(visao.portaCliente, visao.endereco);
+											visao.clienteConectado = true;
 										}
-										tabuleiro.cliente.EnviaBytes(movimento, 6);
+										visao.cliente.EnviaBytes(movimento, 6);
 										Thread.sleep(300);
-										tabuleiro.cliente.RecebeBytes(movimento, 6);
+										visao.cliente.RecebeBytes(movimento, 6);
 										if (movimento != null) {
 											if (movimento[0] == 4) {
-												tabuleiro.tabuleiro = tabuleiro.ai.getTabuleiroAtual();
+												visao.tabuleiro = visao.ai.getTabuleiroAtual();
 												t4 = false;
-												tabuleiro.repaint();
+												visao.repaint();
 											} else {
-												tabuleiro.tabuleiro = temp;
-												tabuleiro.ai.mudaTabuleiro(tabuleiro.tabuleiro);
+												visao.tabuleiro = temp;
+												visao.ai.mudaTabuleiro(visao.tabuleiro);
 											}
 										}
 									}
 								} else {
 									String w = "";
-									if (tabuleiro.tabuleiro.ganhador() == Tabuleiro.VERMELHA) {
+									if (visao.tabuleiro.ganhador() == Tabuleiro.VERMELHA) {
 										w = "Vermelhas";
 									} else {
 										w = "Brancas";
 									}
 									if (!pontuou) {
-										if (cor == tabuleiro.tabuleiro.ganhador()) {
-											tabuleiro.eu++;
+										if (cor == visao.tabuleiro.ganhador()) {
+											visao.eu++;
 										} else {
-											tabuleiro.oponente++;
+											visao.oponente++;
 										}
 										pontuou = true;
 										System.out.println("Ganhador: " + w);
-										System.out.println("Pontuação: eu: " + tabuleiro.eu + ", oponente: " + tabuleiro.oponente);
-										tabuleiro.pai.getEulbl().setText("   Eu: " + tabuleiro.eu + "   ");
-										tabuleiro.pai.getOponentelbl().setText("   Oponente: " + tabuleiro.oponente + "   ");
-										tabuleiro.pai.setTitle("Damas - As " + w + " ganharam!");
-										tabuleiro.servidorConectado = false;
-										tabuleiro.tabuleiro.limpaTabuleiro();
-										tabuleiro.selecionada.limpar();
-										tabuleiro.setServidorConectado(false);
-										tabuleiro.repaint();
+										System.out.println("Pontuação: eu: " + visao.eu + ", oponente: " + visao.oponente);
+										visao.pai.getEulbl().setText("   Eu: " + visao.eu + "   ");
+										visao.pai.getOponentelbl().setText("   Oponente: " + visao.oponente + "   ");
+										visao.pai.setTitle("Damas - As " + w + " ganharam!");
+										visao.servidorConectado = false;
+										visao.tabuleiro.limpaTabuleiro();
+										visao.selecionada.limpar();
+										visao.setServidorConectado(false);
+										visao.clienteConectado = false;
+										visao.repaint();
 										running = false;
 									}
 									t4 = false;
-									tabuleiro.iniciado = false;
+									visao.iniciado = false;
 								}
-								tabuleiro.repaint();
+								visao.repaint();
 							} else {
 								t4 = false;
 							}
 						}
-						tabuleiro.repaint();
+						visao.repaint();
 					} catch (Exception e) {
 
 					}
@@ -625,7 +634,7 @@ class Serv implements Runnable {
 	 * @return posição encontrada
 	 */
 	public int getPosicaoPorCoor(int x, int y) {
-		for (Conversor c : traducao) {
+		for (Conversor c : conversores) {
 			if (c.getX() == x && c.getY() == y) {
 				return c.getPosicao();
 			}
@@ -644,7 +653,7 @@ class Serv implements Runnable {
 	 *            identificador da posição de destino
 	 */
 	public void setMovimentacao(int de, int para) {
-		for (Conversor c : traducao) {
+		for (Conversor c : conversores) {
 			if (c.getPosicao() == de) {
 				movimento[2] = c.getX();
 				movimento[3] = c.getY();
@@ -663,7 +672,7 @@ class Serv implements Runnable {
 	public void adicionaItems() {
 		try {
 			int count = 28, linha = 0;
-			traducao = new ArrayList<Conversor>();
+			conversores = new ArrayList<Conversor>();
 			for (int x = 0; x < 8; x++) {
 
 				for (int j = 0; j < 8; j += 2) {
@@ -672,7 +681,7 @@ class Serv implements Runnable {
 					/*
 					 * if ((i % 2) == 0) { y = j + 1; } else { y = j; }
 					 */
-					traducao.add(new Conversor(count, Byte.parseByte("" + x), Byte.parseByte("" + y)));
+					conversores.add(new Conversor(count, Byte.parseByte("" + x), Byte.parseByte("" + y)));
 					// System.out.println("Pos:"+count+", x: "+i+", y: "+y);
 					if (linha < 4) {
 						count++;
@@ -703,7 +712,7 @@ class Serv implements Runnable {
 				movimento[3] = 0;
 				movimento[4] = 0;
 				movimento[5] = 0;
-				tabuleiro.cliente.EnviaBytes(movimento, 6);
+				visao.cliente.EnviaBytes(movimento, 6);
 				Thread.sleep(100);
 			} else {
 				movimento[0] = 5;
@@ -712,7 +721,7 @@ class Serv implements Runnable {
 				movimento[3] = 0;
 				movimento[4] = 0;
 				movimento[5] = 0;
-				tabuleiro.cliente.EnviaBytes(movimento, 6);
+				visao.cliente.EnviaBytes(movimento, 6);
 				Thread.sleep(100);
 			}
 		} catch (Exception ex) {
@@ -736,7 +745,7 @@ class Serv implements Runnable {
 				movimento[3] = 0;
 				movimento[4] = 0;
 				movimento[5] = 0;
-				tabuleiro.servidor.EnviaBytes(movimento, 6);
+				visao.servidor.EnviaBytes(movimento, 6);
 				Thread.sleep(100);
 			} else {
 				movimento[0] = 5;
@@ -745,7 +754,7 @@ class Serv implements Runnable {
 				movimento[3] = 0;
 				movimento[4] = 0;
 				movimento[5] = 0;
-				tabuleiro.servidor.EnviaBytes(movimento, 6);
+				visao.servidor.EnviaBytes(movimento, 6);
 				Thread.sleep(100);
 			}
 		} catch (Exception ex) {
@@ -766,9 +775,13 @@ class Serv implements Runnable {
 
 		/**
 		 * Construtor
-		 * @param posicao posição no meu protocolo
-		 * @param x posição de linha do protocolo da turma
-		 * @param y posição de coluna do protocolo da turma 
+		 * 
+		 * @param posicao
+		 *            posição no meu protocolo
+		 * @param x
+		 *            posição de linha do protocolo da turma
+		 * @param y
+		 *            posição de coluna do protocolo da turma
 		 */
 		public Conversor(int posicao, byte x, byte y) {
 			this.posicao = posicao;

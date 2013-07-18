@@ -72,7 +72,7 @@ public class Servidor {
 		saida = new BufferedOutputStream(sock.getOutputStream(), BUFF);
 
 	}
-	
+
 	/**
 	 * Envia um array de bytes via socket
 	 * 
@@ -82,14 +82,14 @@ public class Servidor {
 	 *            tamanho do array
 	 * @throws IOException
 	 */
-	public void EnviaBytes(byte vals[], int len) throws IOException {		
+	public void EnviaBytes(byte vals[], int len) throws IOException {
 		System.out.print("Servidor: enviando " + len + " bytes: ");
 		for (int i = 0; i < len; i++)
 			System.out.print(vals[i] + " ");
 		System.out.println("");
 
 		saida.write(vals, 0, len);
-		saida.flush();		
+		saida.flush();
 	}
 
 	/**
@@ -97,8 +97,8 @@ public class Servidor {
 	 * 
 	 * @param val
 	 *            array de bytes a ser usado para armazenar os bytes recebidos
-	 * @param maxlen retorno 
-	 *            número de elementos do array
+	 * @param maxlen
+	 *            retorno número de elementos do array
 	 * @return retorno
 	 * @throws IOException
 	 */

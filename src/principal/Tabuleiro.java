@@ -654,16 +654,16 @@ public class Tabuleiro implements Cloneable, Serializable {
 		if (jogadorAtual == BRANCA) {
 			if (movimentosLegais().taVazio()) {
 				return VERMELHA;
-			}else{
-				if(pecasVermelhas == 0){
+			} else {
+				if (pecasVermelhas == 0) {
 					return BRANCA;
 				}
 			}
 		} else {
 			if (movimentosLegais().taVazio()) {
 				return BRANCA;
-			}else{
-				if(pecasBrancas == 0){
+			} else {
+				if (pecasBrancas == 0) {
 					return VERMELHA;
 				}
 			}
