@@ -1,7 +1,7 @@
 package principal;
 
 /**
- * Classe que contém a inteligência artificial do jogo
+ * Classe que contï¿½m a inteligï¿½ncia artificial do jogo
  */
 public class Ai {
 	/**
@@ -15,14 +15,21 @@ public class Ai {
 	private int cor;
 
 	/**
-	 * Profundidade máxima para o minimax
+	 * Profundidade mï¿½xima para o minimax
 	 */
 	private static final int profundidadeMaxima = 6;
 
 	/**
 	 * Peso das casas do tabuleiro
 	 */
-	private static final int valores[] = { 4, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 4, 4, 2, 1, 3, 3, 1, 2, 4, 4, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4 };
+	private static final int valores[] = {  4, 4, 4, 4, 
+						4, 3, 3, 3, 
+						3, 2, 2, 4, 
+						4, 2, 1, 3, 
+						3, 1, 2, 4, 
+						4, 2, 2, 3, 
+						3, 3, 3, 4, 
+						4, 4, 4, 4 };
 
 	public Tabuleiro getTabuleiroAtual() {
 		return tabuleiroAtual;
@@ -88,7 +95,7 @@ public class Ai {
 	}
 
 	/**
-	 * Indica se a jogada não é nula
+	 * Indica se a jogada nï¿½o ï¿½ nula
 	 */
 	private boolean possoJogar(Lista movimentos) {
 		return !movimentos.taVazio() && !((Lista) movimentos.pegaCabeca()).taVazio();
@@ -120,7 +127,7 @@ public class Ai {
 	}
 
 	/**
-	 * Implementa a avalição da jogada do ponto de vista do jogador máximo
+	 * Implementa a avaliï¿½ï¿½o da jogada do ponto de vista do jogador mï¿½ximo
 	 */
 	private int movimentacaoMaxima(Tabuleiro tabuleiro, int profundidade, int alfa, int beta) throws ExcecaoDeMovimentos {
 		if (cortaArvore(tabuleiro, profundidade))
@@ -150,7 +157,7 @@ public class Ai {
 	}
 
 	/**
-	 * Implementa a avaliação da jogada do ponto de vista do jogador mínimo
+	 * Implementa a avaliaï¿½ï¿½o da jogada do ponto de vista do jogador mï¿½nimo
 	 */
 	private int movimentacaoMinima(Tabuleiro tabuleiro, int profundidade, int alfa, int beta) throws ExcecaoDeMovimentos {
 		if (cortaArvore(tabuleiro, profundidade))
@@ -180,7 +187,7 @@ public class Ai {
 	}
 
 	/**
-	 * Retorna a força do jogador
+	 * Retorna a forï¿½a do jogador
 	 */
 	private int forcaDoJogador(Tabuleiro tabuleiro) {
 		int dama;
@@ -220,7 +227,7 @@ public class Ai {
 	}
 
 	/**
-	 * Calcula a força de uma peça
+	 * Calcula a forï¿½a de uma peï¿½a
 	 */
 	private int calculaValor(int peca, int pos) {
 		int valor;
@@ -244,7 +251,7 @@ public class Ai {
 	}
 
 	/**
-	 * Indica se se pode cortar a árvore
+	 * Indica se se pode cortar a ï¿½rvore
 	 * 
 	 * @param tabuleiro
 	 *            tabuleiro do jogo
