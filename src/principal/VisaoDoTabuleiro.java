@@ -103,7 +103,7 @@ public class VisaoDoTabuleiro extends JPanel {
 	}
 
 	/**
-	 * Começa um novo jogo como as vermelhas
+	 * Comeï¿½a um novo jogo como as vermelhas
 	 */
 	public void novoJogo() {
 		try {
@@ -121,7 +121,7 @@ public class VisaoDoTabuleiro extends JPanel {
 	}
 
 	/**
-	 * Muda o título para refletir o jogador corrente
+	 * Muda o tï¿½tulo para refletir o jogador corrente
 	 */
 	public void MudaTitulo() {
 		if (tabuleiro.ganhador() == 0) {
@@ -144,7 +144,7 @@ public class VisaoDoTabuleiro extends JPanel {
 	 * Desenha o tabuleiro.
 	 * 
 	 * @param g
-	 *            Local onde o desenho é efetuado
+	 *            Local onde o desenho ï¿½ efetuado
 	 */
 	public void paintComponent(Graphics g) {
 		Dimension d = getSize();
@@ -183,7 +183,7 @@ public class VisaoDoTabuleiro extends JPanel {
 	 * Desenha a o tabuleiro
 	 * 
 	 * @param g
-	 *            Contexto onde desenha as peças
+	 *            Contexto onde desenha as peï¿½as
 	 * @param marginX
 	 *            Margem horizontal do tabuleiro
 	 * @param marginY
@@ -212,7 +212,7 @@ public class VisaoDoTabuleiro extends JPanel {
 	}
 
 	/**
-	 * Margem para as pecas que são damas
+	 * Margem para as pecas que sï¿½o damas
 	 */
 	private static final int TAMANHO_DAMA = 3;
 
@@ -220,14 +220,14 @@ public class VisaoDoTabuleiro extends JPanel {
 	 * Desenha as pecas no tabuleiro
 	 * 
 	 * @param g
-	 *            Contexto onde desenha as peças
+	 *            Contexto onde desenha as peï¿½as
 	 * @param marginX
 	 *            Margem horizontal do tabuleiro
 	 * @param marginY
 	 *            Margem vertical do tabuleiro
 	 * @param incValue
-	 *            Fator de incremento entre as casas do tabuleiro onde as peças
-	 *            são desenhadas
+	 *            Fator de incremento entre as casas do tabuleiro onde as peï¿½as
+	 *            sï¿½o desenhadas
 	 */
 	private void desenhaPecas(Graphics g, int marginX, int marginY, int incValue) {
 		int x, y;
@@ -265,7 +265,7 @@ public class VisaoDoTabuleiro extends JPanel {
 	 * Inicia a thread principal do jogo
 	 * 
 	 * @param visao
-	 *            instância do tabuleiro
+	 *            instï¿½ncia do tabuleiro
 	 */
 	public void iniciaThreadPrincipal(VisaoDoTabuleiro visao) {
 		this.serv = new Serv(visao);
@@ -274,8 +274,8 @@ public class VisaoDoTabuleiro extends JPanel {
 	}
 
 	/**
-	 * Boolean sincronizada que faz a organização entre as duas threads
-	 * informando se o servidor está conectado ou não
+	 * Boolean sincronizada que faz a organizaï¿½ï¿½o entre as duas threads
+	 * informando se o servidor estï¿½ conectado ou nï¿½o
 	 * 
 	 * @return retorna estado do servidor
 	 */
@@ -291,8 +291,8 @@ public class VisaoDoTabuleiro extends JPanel {
 	}
 
 	/**
-	 * Método responsável pela atribuição da boolean que informa se o servidor
-	 * está conectado e liberação das threads em estado de espera
+	 * Mï¿½todo responsï¿½vel pela atribuiï¿½ï¿½o da boolean que informa se o servidor
+	 * estï¿½ conectado e liberaï¿½ï¿½o das threads em estado de espera
 	 * 
 	 * @param servidorConectado
 	 *            estado do servidor
@@ -312,7 +312,7 @@ class ServStart implements Runnable {
 	VisaoDoTabuleiro visao;
 
 	/**
-	 * Construtor do início do servidor
+	 * Construtor do inï¿½cio do servidor
 	 * 
 	 * @param tabuleiro
 	 *            Recebe uma instancia do jogo
@@ -358,7 +358,7 @@ class Serv implements Runnable {
 	byte deIni, paraIni, deFin, paraFin;
 
 	/**
-	 * Construtor do início do jogo
+	 * Construtor do inï¿½cio do jogo
 	 * 
 	 * @param tabuleiro
 	 *            Recebe uma instancia do jogo
@@ -505,7 +505,7 @@ class Serv implements Runnable {
 											}
 											pontuou = true;
 											System.out.println("Ganhador: " + w);
-											System.out.println("Pontuação: eu: " + visao.eu + ", oponente: " + visao.oponente);
+											System.out.println("Pontuaï¿½ï¿½o: eu: " + visao.eu + ", oponente: " + visao.oponente);
 											visao.pai.getEulbl().setText("   Eu: " + visao.eu + "   ");
 											visao.pai.getOponentelbl().setText("   Oponente: " + visao.oponente + "   ");
 											visao.pai.setTitle("Damas - As " + w + " ganharam!");
@@ -592,7 +592,7 @@ class Serv implements Runnable {
 										}
 										pontuou = true;
 										System.out.println("Ganhador: " + w);
-										System.out.println("Pontuação: eu: " + visao.eu + ", oponente: " + visao.oponente);
+										System.out.println("Pontuaï¿½ï¿½o: eu: " + visao.eu + ", oponente: " + visao.oponente);
 										visao.pai.getEulbl().setText("   Eu: " + visao.eu + "   ");
 										visao.pai.getOponentelbl().setText("   Oponente: " + visao.oponente + "   ");
 										visao.pai.setTitle("Damas - As " + w + " ganharam!");
@@ -624,14 +624,14 @@ class Serv implements Runnable {
 	}
 
 	/**
-	 * Busca uma posição do meu protocolo dada uma coordenada do protocolo da
+	 * Busca uma posiï¿½ï¿½o do meu protocolo dada uma coordenada do protocolo da
 	 * turma
 	 * 
 	 * @param x
 	 *            coordenada x
 	 * @param y
 	 *            coordenada y
-	 * @return posição encontrada
+	 * @return posiï¿½ï¿½o encontrada
 	 */
 	public int getPosicaoPorCoor(int x, int y) {
 		for (Conversor c : conversores) {
@@ -643,14 +643,14 @@ class Serv implements Runnable {
 	}
 
 	/**
-	 * Busca o 'x' e o 'y' corespondentes a duas posições do meu protocolo e
+	 * Busca o 'x' e o 'y' corespondentes a duas posiï¿½ï¿½es do meu protocolo e
 	 * coloca eles no array de movimento
 	 * 
 	 * @param de
-	 *            identificador da posição de origem
+	 *            identificador da posiï¿½ï¿½o de origem
 	 * 
 	 * @param para
-	 *            identificador da posição de destino
+	 *            identificador da posiï¿½ï¿½o de destino
 	 */
 	public void setMovimentacao(int de, int para) {
 		for (Conversor c : conversores) {
@@ -692,7 +692,7 @@ class Serv implements Runnable {
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("Erro na função adicionaItems!!");
+			System.out.println("Erro na funï¿½ï¿½o adicionaItems!!");
 			e.printStackTrace();
 		}
 	}
@@ -701,31 +701,26 @@ class Serv implements Runnable {
 	 * Gera e envia uma resposta via socket Cliente
 	 * 
 	 * @param ok
-	 *            parametro que define se a resposta é positiva ou negativa
+	 *            parametro que define se a resposta ï¿½ positiva ou negativa
 	 **/
 	public void responde(boolean ok) {
 		try {
+			movimento[1] = 0;
+			movimento[2] = 0;
+			movimento[3] = 0;
+			movimento[4] = 0;
+			movimento[5] = 0;
 			if (ok) {
 				movimento[0] = 4;
-				movimento[1] = 0;
-				movimento[2] = 0;
-				movimento[3] = 0;
-				movimento[4] = 0;
-				movimento[5] = 0;
 				visao.cliente.EnviaBytes(movimento, 6);
 				Thread.sleep(100);
 			} else {
 				movimento[0] = 5;
-				movimento[1] = 0;
-				movimento[2] = 0;
-				movimento[3] = 0;
-				movimento[4] = 0;
-				movimento[5] = 0;
 				visao.cliente.EnviaBytes(movimento, 6);
 				Thread.sleep(100);
 			}
 		} catch (Exception ex) {
-			System.out.println("Erro na função responde!!");
+			System.out.println("Erro na funï¿½ï¿½o responde!!");
 			ex.printStackTrace();
 		}
 	}
@@ -734,31 +729,26 @@ class Serv implements Runnable {
 	 * Gera e envia uma resposta via socket Servidor
 	 * 
 	 * @param ok
-	 *            parametro que define se a resposta é positiva ou negativa
+	 *            parametro que define se a resposta ï¿½ positiva ou negativa
 	 **/
 	public void respondeServidor(boolean ok) {
 		try {
+			movimento[1] = 0;
+			movimento[2] = 0;
+			movimento[3] = 0;
+			movimento[4] = 0;
+			movimento[5] = 0;
 			if (ok) {
 				movimento[0] = 4;
-				movimento[1] = 0;
-				movimento[2] = 0;
-				movimento[3] = 0;
-				movimento[4] = 0;
-				movimento[5] = 0;
 				visao.servidor.EnviaBytes(movimento, 6);
 				Thread.sleep(100);
 			} else {
 				movimento[0] = 5;
-				movimento[1] = 0;
-				movimento[2] = 0;
-				movimento[3] = 0;
-				movimento[4] = 0;
-				movimento[5] = 0;
 				visao.servidor.EnviaBytes(movimento, 6);
 				Thread.sleep(100);
 			}
 		} catch (Exception ex) {
-			System.out.println("Erro na função respondeServidor!!");
+			System.out.println("Erro na funï¿½ï¿½o respondeServidor!!");
 			ex.printStackTrace();
 		}
 	}
@@ -777,11 +767,11 @@ class Serv implements Runnable {
 		 * Construtor
 		 * 
 		 * @param posicao
-		 *            posição no meu protocolo
+		 *            posiï¿½ï¿½o no meu protocolo
 		 * @param x
-		 *            posição de linha do protocolo da turma
+		 *            posiï¿½ï¿½o de linha do protocolo da turma
 		 * @param y
-		 *            posição de coluna do protocolo da turma
+		 *            posiï¿½ï¿½o de coluna do protocolo da turma
 		 */
 		public Conversor(int posicao, byte x, byte y) {
 			this.posicao = posicao;
